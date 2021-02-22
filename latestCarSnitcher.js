@@ -98,6 +98,12 @@ const latestCarSnitcher = async () => {
 	await page.goto(url, {
 		waitUntil: 'networkidle0',
 	  });
+	var newList = await getNewList(page, config.howManyLatestCarsToWatch);
+
+	oldCars = newList.cars;
+	oldCarsPrice = newList.carsPrice;
+	oldX = newList.x;
+	oldCarsHref = newList.href;
 	
 	var boolean = false;
 
@@ -112,6 +118,55 @@ const latestCarSnitcher = async () => {
 
 	while(true)
 	{
+		if(page.url() == urlCaptcha)
+		{
+			console.log("asd");
+			await solve(page);
+			var flag = true;
+			while(flag)
+			{
+				console.log(page.url());
+				if(page.url() != urlCaptcha)
+				{
+					flag = false;
+					console.log("nutraukti");
+					break;
+				}
+				await page.waitForTimeout(1);
+			}
+		}else if(page.url() == 'https://www.vaurioajoneuvo.fi/')
+		{
+			var newList = await getNewList(page, config.howManyLatestCarsToWatch);
+			cars = newList.cars;
+			carsPrice = newList.carsPrice;
+			x = newList.x;
+			carsHref = newList.href;
+			for(var i = 0; i < x; i++)
+			{
+				for(var j = 0; j < oldX; j++)
+				{
+					if(cars[i] == oldCars[j] && carsPrice[i] == oldCarsPrice[j])
+					{
+						//console.log(cars[i] + " " + oldCars[j]);
+						//console.log(carsPrice[i] + " " + oldCarsPrice[j]);
+						boolean = true;
+					}
+				}
+				//console.log(boolean);
+				if(boolean == false)
+				{
+					//console.log(carsHref[i]);
+					reserveCar(page, browser, carsHref[i]);
+					oldCars = newList.cars;
+					oldCarsPrice = newList.carsPrice;
+					oldX = newList.x;
+					oldCarsHref = newList.href;
+				}else{
+					boolean = false;
+				}
+				boolean = false;
+			}
+		}
 		await page.goto(url);
 		//break;
 	}
@@ -188,6 +243,108 @@ const latestCarSnitcher = async () => {
 
 	//await page.click('[data-auction-id="21993"]');
 };
+
+function sleep(milliseconds) {
+	const date = Date.now();
+	let currentDate = null;
+	do {
+	  currentDate = Date.now();
+	} while (currentDate - date < milliseconds);
+  }
+
+
+async function reserveCar(page, browser, link)
+{
+	const page1 = await browser.newPage();
+	await page1.goto(url + link, {
+		waitUntil: 'networkidle0',
+	  });
+	/*const link = await page.$(`[data-auction-id="${id}"]`);
+	const newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page())));
+	await link.click({button: 'middle'});
+	const page2 = await newPagePromise;*/
+	await page1.bringToFront();
+	if(page1.url() == urlCaptcha)
+	{
+		solve(page1);
+		await page1.goto(url + link, {
+			waitUntil: 'networkidle0',
+		  });
+	}
+	const html = await page1.$eval('body', e => e.outerHTML);
+	console.log(html);
+	await page1.click('[data-action="reserve-product"] > .button-buy');
+	await page.bringToFront();
+}
+
+async function getNewList(page, howManyCars) {
+	var cars = new Array(howManyCars);
+	var carsPrice = new Array(howManyCars);
+	var carsHref = new Array(howManyCars);
+	const carNumbers = await page.$$("div.item-lift-container > a");
+	var x = 0;
+	for( let carNumber of carNumbers ) {
+		if(x == howManyCars)
+		{
+			break;
+		}
+		
+		const href = await page.evaluate(el => el.getAttribute("href"), carNumber);
+		const attr =  await page.$eval(`[href="${href}"] > .item-lift`, el => el.getAttribute("data-auction-id"));
+		const text = await page.$eval(`[data-auction-id="${attr}"] > .item-lift-price > .item-lift-price-now-title`, el => el.textContent);
+
+		if(text != "Vain purkamoille")
+		{
+			cars[x] = attr;
+			carsPrice[x] = await page.$eval(`[data-auction-id="${attr}"] > .item-lift-price > .item-lift-price-now`, el => el.textContent);
+			carsHref[x] = href;
+			x++;
+		}
+
+	}
+
+	return {
+		cars: cars,
+		carsPrice: carsPrice,
+		x: x, 
+		href: carsHref
+	   };
+}
+
+
+async function getNewList1(page, howManyCars) {
+	var cars = new Array(howManyCars);
+	var carsPrice = new Array(howManyCars);
+	var carsHref = new Array(howManyCars);
+	const carNumbers = await page.$$("div.item-lift-container > a");
+	var x = 0;
+	for( let carNumber of carNumbers ) {
+		if(x == (howManyCars-1))
+		{
+			break;
+		}
+		
+		const href = await page.evaluate(el => el.getAttribute("href"), carNumber);
+		const attr =  await page.$eval(`[href="${href}"] > .item-lift`, el => el.getAttribute("data-auction-id"));
+		const text = await page.$eval(`[data-auction-id="${attr}"] > .item-lift-price > .item-lift-price-now-title`, el => el.textContent);
+
+		if(text != "Vain purkamoille")
+		{
+			cars[x] = attr;
+			carsPrice[x] = await page.$eval(`[data-auction-id="${attr}"] > .item-lift-price > .item-lift-price-now`, el => el.textContent);
+			carsHref[x] = href;
+			x++;
+		}
+
+	}
+
+	return {
+		cars: cars,
+		carsPrice: carsPrice,
+		x: x, 
+		href: carsHref
+	   };
+}
 
 
 /**
