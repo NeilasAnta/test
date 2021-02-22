@@ -282,14 +282,17 @@ async function getNewList(page, howManyCars) {
 	var carsPrice = new Array(howManyCars);
 	var carsHref = new Array(howManyCars);
 	const carNumbers = await page.$$("div.item-lift-container > a");
+	//console.log(carNumbers);
 	var x = 0;
-	for( let carNumber of carNumbers ) {
-		if(x == howManyCars)
+
+	const attr = await page.$$eval("div.item-lift-container > a", el => el.map(x => x.getAttribute("href")));
+	for(let href of attr) {
+		if(x == (howManyCars))
 		{
 			break;
 		}
 		
-		const href = await page.evaluate(el => el.getAttribute("href"), carNumber);
+		//const href = await page.evaluate(el => el.getAttribute("href"), carNumber);
 		const attr =  await page.$eval(`[href="${href}"] > .item-lift`, el => el.getAttribute("data-auction-id"));
 		const text = await page.$eval(`[data-auction-id="${attr}"] > .item-lift-price > .item-lift-price-now-title`, el => el.textContent);
 
