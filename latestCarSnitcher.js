@@ -98,12 +98,6 @@ const latestCarSnitcher = async () => {
 	await page.goto(url, {
 		waitUntil: 'networkidle0',
 	  });
-	var newList = await getNewList(page, config.howManyLatestCarsToWatch);
-
-	oldCars = newList.cars;
-	oldCarsPrice = newList.carsPrice;
-	oldX = newList.x;
-	oldCarsHref = newList.href;
 	
 	var boolean = false;
 
