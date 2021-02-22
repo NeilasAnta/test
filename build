@@ -1,6 +1,0 @@
-#!/usr/bin/env node
-// build.js
-
-const build = require("./build.js");
-
-build();
