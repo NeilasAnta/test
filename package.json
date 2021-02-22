@@ -15,6 +15,7 @@
 		"build-installer": "./build-installer-pkg.sh"
 	},
 	"dependencies": {
+		"axios": "^0.21.1",
 		"download-chromium": "^2.2.0",
 		"fs-extra": "^8.1.0",
 		"nexe": "^3.3.2",
@@ -24,7 +25,9 @@
 		"patch-package": "^6.2.0",
 		"pkg": "^4.4.2",
 		"postinstall-postinstall": "^2.0.0",
-		"puppeteer": "^2.0.0",
+		"puppeteer": "^5.3.0",
+		"puppeteer-extra": "^3.1.15",
+		"puppeteer-extra-plugin-stealth": "^2.6.1",
 		"tar": "^5.0.5"
 	},
 	"devDependencies": {},
