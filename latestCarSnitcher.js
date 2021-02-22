@@ -55,7 +55,7 @@ const pageWaitForSelectorOptions = {
  * @returns {Promise<never>}
  */
 // export const latestCarSnitcher = async () => {
-const latestCarSnitcher = async () => {
+export const latestCarSnitcher = async () => {
 	/** @type {import("./config" )} */
 	const config = getConfig();
 	const executablePath = getExecutablePath();
